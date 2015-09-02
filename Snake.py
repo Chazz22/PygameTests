@@ -121,9 +121,6 @@ class Main:
             if self.pos_x > display_width or self.pos_x < 0 or self.pos_y > display_height or self.pos_y < 0:
                 self.gameOver = True
 
-            self.pos_x += self.pos_x_change
-            self.pos_y += self.pos_y_change
-
             self.gameDisplay.fill(WHITE)
             pygame.draw.rect(self.gameDisplay, GREEN, [self.apple_x, self.apple_y, block_size, block_size])
             pygame.draw.rect(self.gameDisplay, RED, [self.pos_x, self.pos_y, block_size, block_size])
