@@ -2,9 +2,6 @@ __author__ = 'jono'
 
 import pygame, random, math
 
-pygame.init()
-pygame.font.init()
-
 display_width = 300
 display_height = 300
 
@@ -21,122 +18,136 @@ SNAKE_BOT = True
 
 block_size = 10
 
-clock = pygame.time.Clock()
-font = pygame.font.Font(None, 25)
-
-gameDisplay = pygame.display.set_mode((display_width, display_height))
-pygame.display.set_caption("Slither")
-
-def snake(snakelist):
-    for xy in snakelist:
-        pygame.draw.rect(gameDisplay, RED, [xy[0], xy[1], block_size, block_size])
+class Main:
 
 
-def sendMessage(msg, color):
-    screen_text = font.render(msg, True, color)
-    gameDisplay.blit(screen_text, [(display_width / 2) - (screen_text.get_rect().width / 2), display_height / 2])
+    def __init__(self):
 
-def dist(x1, x2, y1, y2):
-    return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+        self.gameExit = False
+        self.gameOver = False
 
-def gameLoop():
+        self.pos_x = display_width / 2
+        self.pos_y = display_height / 2
+        self.pos_x_change = 0
+        self.pos_y_change = 0
 
-    gameExit = False
-    gameOver = False
+        self.apple_x = round(random.randrange(0, display_height - block_size) / block_size) * block_size
+        self.apple_y = round(random.randrange(0, display_height - block_size) / block_size) * block_size
 
-    pos_x = display_width / 2
-    pos_y = display_height / 2
-    pos_x_change = 0
-    pos_y_change = 0
+        self.snakeList = []
+        self.snakeLength = 1
 
-    apple_x = round(random.randrange(0, display_width - block_size) / block_size) * block_size
-    apple_y = round(random.randrange(0, display_height - block_size) / block_size) * block_size
+        self.font = None
+        self.clock = None
 
-    snakeList = []
-    snakeLength = 1
+        self.gameLoop()
 
-    while not gameExit:
+    def snake(self, snakelist):
+        for xy in snakelist:
+            pygame.draw.rect(self.gameDisplay, RED, [xy[0], xy[1], block_size, block_size])
 
-        while gameOver:
-            gameDisplay.fill(WHITE)
-            sendMessage("Game over, click the screen to play again!", RED)
-            pygame.display.update()
+    def sendMessage(self, msg, color):
+        screen_text = self.font.render(msg, True, color)
+        self.gameDisplay.blit(screen_text, [(display_width / 2) - (screen_text.get_rect().width / 2), display_height / 2])
+
+    def scan_vertical(self):
+        for part in self.snakeList[:-1]:
+            if part[1] == self.pos_y:
+                if part[1] > self.pos_y:
+                    
+
+    def gameLoop(self):
+
+        pygame.init()
+        pygame.font.init()
+
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(None, 25)
+
+        self.gameDisplay = pygame.display.set_mode((display_width, display_height))
+        pygame.display.set_caption("Snake")
+
+        while not self.gameExit:
+
+            while self.gameOver:
+                self.gameDisplay.fill(WHITE)
+                self.sendMessage("Game over, click the screen to play again!", RED)
+                pygame.display.update()
+
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.gameLoop()
+
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
 
             for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    gameLoop()
 
-        for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
 
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                # Movement
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        self.pos_x_change = -block_size
+                        self.pos_y_change = 0
+                    elif event.key == pygame.K_RIGHT:
+                        self.pos_x_change = block_size
+                        self.pos_y_change = 0
+                    elif event.key == pygame.K_UP:
+                        self.pos_y_change = -block_size
+                        self.pos_x_change = 0
+                    elif event.key == pygame.K_DOWN:
+                        self.pos_y_change = block_size
+                        self.pos_x_change = 0
 
-            # Movement
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    pos_x_change = -block_size
-                    pos_y_change = 0
-                elif event.key == pygame.K_RIGHT:
-                    pos_x_change = block_size
-                    pos_y_change = 0
-                elif event.key == pygame.K_UP:
-                    pos_y_change = -block_size
-                    pos_x_change = 0
-                elif event.key == pygame.K_DOWN:
-                    pos_y_change = block_size
-                    pos_x_change = 0
+            if SNAKE_BOT:
 
-        if SNAKE_BOT:
-            if pos_x < apple_x:
+                # Left of the apple
+                if self.pos_x < self.apple_x:
 
-                pos_x_change = block_size
-                pos_y_change = 0
+                # Right of the apple
+                elif self.pos_x > self.apple_x:
 
-            if pos_x > apple_x:
-                pos_x_change = -block_size
-                pos_y_change = 0
-            if pos_y < apple_y:
-                pos_y_change = block_size
-                pos_x_change = 0
-            if pos_y > apple_y:
-                pos_y_change = -block_size
-                pos_x_change = 0
+                # Under apple
+                elif self.pos_y < self.apple_y:
 
-        # Game barrier
-        if pos_x > display_width or pos_x < 0 or pos_y > display_height or pos_y < 0:
-            gameOver = True
+                # Above apple
+                elif self.pos_y > self.apple_y:
 
-        pos_x += pos_x_change
-        pos_y += pos_y_change
+            # Game barrier
+            if self.pos_x > display_width or self.pos_x < 0 or self.pos_y > display_height or self.pos_y < 0:
+                self.gameOver = True
 
-        gameDisplay.fill(WHITE)
-        pygame.draw.rect(gameDisplay, GREEN, [apple_x, apple_y, block_size, block_size])
-        pygame.draw.rect(gameDisplay, RED, [pos_x, pos_y, block_size, block_size])
+            self.pos_x += self.pos_x_change
+            self.pos_y += self.pos_y_change
 
-        if pos_x == apple_x and pos_y == apple_y:
-            snakeLength += 1
-            apple_x = round(random.randrange(0, display_width - block_size) / 10) * 10
-            apple_y = round(random.randrange(0, display_height - block_size) / 10) * 10
+            self.gameDisplay.fill(WHITE)
+            pygame.draw.rect(self.gameDisplay, GREEN, [self.apple_x, self.apple_y, block_size, block_size])
+            pygame.draw.rect(self.gameDisplay, RED, [self.pos_x, self.pos_y, block_size, block_size])
 
-        snakeHead = []
-        snakeHead.append(pos_x)
-        snakeHead.append(pos_y)
-        snakeList.append(snakeHead)
+            if self.pos_x == self.apple_x and self.pos_y == self.apple_y:
+                self.snakeLength += 1
+                self.apple_x = round(random.randrange(0, display_width - block_size) / 10) * 10
+                self.apple_y = round(random.randrange(0, display_height - block_size) / 10) * 10
 
-        if (len(snakeList) > snakeLength):
-            del snakeList[0]
+            snakeHead = []
+            snakeHead.append(self.pos_x)
+            snakeHead.append(self.pos_y)
+            self.snakeList.append(snakeHead)
 
-        for snakepart in snakeList[:-1]:
-            if snakepart == snakeHead:
-                gameOver = True
+            if len(self.snakeList) > self.snakeLength:
+                del self.snakeList[0]
 
-        snake(snakeList)
+            for snakepart in self.snakeList[:-1]:
+                if snakepart == snakeHead:
+                    self.gameOver = True
 
-        pygame.display.update()
-        clock.tick(fps)
+            self.snake(self.snakeList)
 
-gameLoop()
+            pygame.display.update()
+            self.clock.tick(fps)
 
-pygame.quit()
-quit()
+Main()
