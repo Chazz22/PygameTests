@@ -1,16 +1,47 @@
 __author__ = 'jono'
 
-import pygame
+import pygame, math
+from abc import abstractmethod
 
 display_size = 500
 fps = 30
 
 ball = display_size // 30
-bar_height = display_size // 2
+bar_height = display_size // 3
 
 white = (255, 255, 255)
 black = (0, 0, 0)
 
+
+class Entity:
+
+    def __init__(self, game_display, x, y, angle, speed):
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.speed = speed
+        self.game_display = game_display
+
+    def move(self):
+        self.x += math.sin(self.angle) * self.speed
+        self.y += math.sin(self.angle) * self.speed
+
+    @abstractmethod
+    def draw(self):
+        pass
+
+class Paddle(Entity):
+
+
+
+
+class Ball(Entity):
+
+    def __init__(self, radius):
+        self.radius = radius
+
+    def draw(self):
+        pygame.draw.circle(self.game_display, )
 
 class Main:
 
