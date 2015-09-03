@@ -2,7 +2,7 @@ __author__ = 'jono'
 
 import pygame
 
-display_size = 300
+display_size = 500
 fps = 30
 
 ball = display_size // 30
@@ -19,6 +19,8 @@ class Main:
         self.game_exit = False
         self.game_over = False
 
+        self.game_started = False
+
         self.clock = None
         self.font = None
         self.game_display = None
@@ -32,19 +34,45 @@ class Main:
         self.player1_ychange = 0
         self.player2_ychange = 0
 
+        self.player1_score = 0
+        self.player2_score = 0
+
         self.game_loop()
 
     def draw_players(self):
         pygame.draw.rect(self.game_display, black, [self.player1_pos_x, self.player1_pos_y, ball, bar_height])
         pygame.draw.rect(self.game_display, black, [self.player2_pos_x, self.player2_pos_y, ball, bar_height])
 
+    def scoreboard(self):
+        text = self.font.render('{}:{}'.format(self.player1_score, self.player2_score), True, black)
+        self.game_display.blit(text, ((display_size // 2) - (text.get_rect().width // 2), ball))
+
+    def send_centered_message(self, msg):
+        text = self.font.render(msg, True, black)
+        self.game_display.blit(text, ((display_size // 2) - (text.get_rect().width // 2), display_size // 2))
+
     def game_loop(self):
 
         pygame.init()
 
         self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(None, display_size // 10)
         self.game_display = pygame.display.set_mode((display_size, display_size))
         pygame.display.set_caption('Pong')
+
+        while not self.game_started:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    self.game_started = True
+
+            self.game_display.fill(white)
+            self.send_centered_message('Press any key to begin!')
+
+            pygame.display.update()
 
         while not self.game_exit:
 
@@ -56,22 +84,34 @@ class Main:
                 # Movement
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DOWN:
-                        if self.player2_ychange != 0:
-                            self.player2_ychange = 0
+                        self.player2_ychange = 0
                         self.player2_ychange += ball
-                    if event.key == pygame.K_UP:
-                        if self.player2_ychange != 0:
-                            self.player2_ychange = 0
+                    elif event.key == pygame.K_UP:
+                        self.player2_ychange = 0
                         self.player2_ychange += -ball
+                    elif event.key == pygame.K_w:
+                        self.player1_ychange = 0
+                        self.player1_ychange += -ball
+                    elif event.key == pygame.K_s:
+                        self.player1_ychange = 0
+                        self.player1_ychange += ball
 
-            if self.player2_pos_y < 0 or self.player2_pos_y > (display_size - bar_height):
-                self.player2_ychange = 0
+            if self.player2_pos_y < 0:
+                self.player2_pos_y = 0
+            elif self.player2_pos_y > (display_size - bar_height):
+                self.player2_pos_y = display_size - bar_height
+
+            if self.player1_pos_y < 0:
+                self.player1_pos_y = 0
+            elif self.player1_pos_y > (display_size - bar_height):
+                self.player1_pos_y = display_size - bar_height
 
             self.player1_pos_y += self.player1_ychange
             self.player2_pos_y += self.player2_ychange
 
             self.game_display.fill(white)
             self.draw_players()
+            self.scoreboard()
 
             pygame.display.update()
             self.clock.tick(fps)
