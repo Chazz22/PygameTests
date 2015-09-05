@@ -8,7 +8,7 @@ fps = 30
 
 ball_size = display_size // 30
 paddle_height = display_size // 3
-paddle_speed = ball_size // 1.2
+paddle_speed = ball_size / 1.5
 ball_speed = ball_size * 1.1
 button_width = int(display_size * .15)
 button_height = int(button_width * 0.6)
@@ -70,7 +70,7 @@ class Ball(BaseEntity):
         self.y -= int(math.sin(self.angle) * self.speed)
 
     def reset(self):
-        ball_range = [0, math.pi]
+        ball_range = [2 * math.pi, math.pi]
         self.x = self.origin_x
         self.y = self.origin_y
         self.angle = random.choice(ball_range)
@@ -102,7 +102,7 @@ class BaseMenu(object):
 
     def check_click(self):
         if not self.enabled:
-            return
+             return
         mouse_x = pygame.mouse.get_pos()[0]
         mouse_y = pygame.mouse.get_pos()[1]
         for button in self.buttons:
@@ -229,6 +229,7 @@ class Main:
                     pygame.quit()
                     quit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    print(self.player_selection_menu.check_click())
                     if self.main_menu.check_click() == 'Play':
                         self.main_menu.enabled = False
                         self.player_selection_menu.enabled = True
@@ -277,12 +278,12 @@ class Main:
 
             # Calculate AI
             if self.player1.is_bot:
-                if self.player1.y < self.ball.y:
+                if self.player1.y + paddle_height < self.ball.y:
                     self.player1.angle = math.pi / 2
                 elif self.player1.y > self.ball.y:
                     self.player1.angle = -math.pi / 2
             if self.player2.is_bot:
-                if self.player2.y < self.ball.y:
+                if self.player2.y + paddle_height < self.ball.y:
                     self.player2.angle = math.pi / 2
                 elif self.player2.y > self.ball.y:
                     self.player2.angle = -math.pi / 2
