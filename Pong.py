@@ -78,7 +78,7 @@ class Ball(BaseEntity):
 
 class BaseMenu(object):
 
-    def __init__(self, main, buttons, enabled=True):
+    def __init__(self, main, buttons, enabled=False):
         self.main = main
         self.buttons = buttons
         self.enabled = enabled
@@ -118,6 +118,16 @@ class MainMenu(BaseMenu):
         BaseMenu.__init__(self, main, self.buttons)
 
 
+class PlayerSelectionMenu(BaseMenu):
+
+    def __init__(self, main):
+        self.main = main
+        self.buttons = ([Button(self.main, '1 Player', display_size // 2 - button_width / 2, display_size // 3)
+                         , Button(self.main, '2 Player', display_size // 2 - button_width / 2, (display_size // 3) + button_height * 1.2)
+                         , Button(self.main, '0 Player', display_size // 2 - button_width / 2, (display_size // 3) + 2 * button_height * 1.2)])
+        BaseMenu.__init__(self, main, self.buttons)
+
+
 class Button(object):
 
     def __init__(self, main, name, x, y):
@@ -136,7 +146,7 @@ class Button(object):
         else:
             pygame.draw.rect(self.game_display, black, (self.x, self.y, button_width, button_height))
         text = self.font.render(self.name, True, white)
-        self.game_display.blit(text, ((self.x + button_width) - (text.get_rect().width // 2), (self.y + button_height) // 2))
+        self.game_display.blit(text, (self.x, self.y))
 
     def click(self):
         return self.name
@@ -177,7 +187,7 @@ class Main:
         pygame.init()
         self.clock = pygame.time.Clock()
         pygame.font.init()
-        self.font = pygame.font.Font(None, display_size // 10)
+        self.font = pygame.font.Font(None, display_size // 20)
         self.game_display = pygame.display.set_mode((display_size, display_size))
         pygame.display.set_caption('Pong')
         pygame.mixer.init()
@@ -190,6 +200,7 @@ class Main:
 
         self.hud = Hud(self)
         self.main_menu = MainMenu(self)
+        self.player_selection_menu = PlayerSelectionMenu(self)
 
         self.game_loop()
 
@@ -199,6 +210,8 @@ class Main:
         self.ball.reset()
 
     def game_loop(self):
+
+        self.main_menu.enabled = True
 
         self.player1 = Paddle(self.game_display, ball_size * 2, display_size // 4, 0, paddle_speed)
         self.player2 = Paddle(self.game_display, display_size - (ball_size * 3), display_size // 4, 0, paddle_speed)
@@ -217,9 +230,13 @@ class Main:
                     self.game_started = True
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.main_menu.check_click() == 'Play':
-                        self.game_started = True
+                        self.main_menu.enabled = False
+                        self.player_selection_menu.enabled = True
 
             self.game_display.fill(white)
+            if self.player_selection_menu.enabled:
+                self.player_selection_menu.check_hover()
+                self.player_selection_menu.draw()
             if self.main_menu.enabled:
                 self.main_menu.check_hover()
                 self.main_menu.draw()
