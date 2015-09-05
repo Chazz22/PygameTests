@@ -70,7 +70,7 @@ class Ball(BaseEntity):
         self.y -= int(math.sin(self.angle) * self.speed)
 
     def reset(self):
-        ball_range = [random.uniform(-math.pi / 10, math.pi / 10), random.uniform(3 * math.pi / 4, 5 * math.pi / 4)]
+        ball_range = [0, math.pi]
         self.x = self.origin_x
         self.y = self.origin_y
         self.angle = random.choice(ball_range)
@@ -108,6 +108,8 @@ class BaseMenu(object):
         for button in self.buttons:
             if button.x < mouse_x < button.x + button_width and button.y < mouse_y < button.y + button_height:
                 return button.click()
+            else:
+                return None
 
 
 class MainMenu(BaseMenu):
@@ -226,12 +228,22 @@ class Main:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-                if event.type == pygame.KEYDOWN:
-                    self.game_started = True
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.main_menu.check_click() == 'Play':
                         self.main_menu.enabled = False
                         self.player_selection_menu.enabled = True
+                    if self.player_selection_menu.check_click() == '1 Player':
+                        self.player2.is_bot = True
+                        self.player_selection_menu.enabled = False
+                        self.game_started = True
+                    elif self.player_selection_menu.check_click() == '2 Player':
+                        self.player_selection_menu.enabled = False
+                        self.game_started = True
+                    elif self.player_selection_menu.check_click() == '0 Player':
+                        self.player1.is_bot = True
+                        self.player2.is_bot = True
+                        self.player_selection_menu.enabled = False
+                        self.game_started = True
 
             self.game_display.fill(white)
             if self.player_selection_menu.enabled:
@@ -254,14 +266,26 @@ class Main:
 
                 # Movement
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_DOWN and not self.player2.is_bot:
                         self.player2.angle = math.pi / 2
-                    elif event.key == pygame.K_UP:
+                    elif event.key == pygame.K_UP and not self.player2.is_bot:
                         self.player2.angle = -math.pi / 2
-                    elif event.key == pygame.K_w:
+                    elif event.key == pygame.K_w and not self.player1.is_bot:
                         self.player1.angle = -math.pi / 2
-                    elif event.key == pygame.K_s:
+                    elif event.key == pygame.K_s and not self.player1.is_bot:
                         self.player1.angle = math.pi / 2
+
+            # Calculate AI
+            if self.player1.is_bot:
+                if self.player1.y < self.ball.y:
+                    self.player1.angle = math.pi / 2
+                elif self.player1.y > self.ball.y:
+                    self.player1.angle = -math.pi / 2
+            if self.player2.is_bot:
+                if self.player2.y < self.ball.y:
+                    self.player2.angle = math.pi / 2
+                elif self.player2.y > self.ball.y:
+                    self.player2.angle = -math.pi / 2
 
             # Paddle collision with y bounds
             if self.player2.y < 0:
