@@ -95,7 +95,7 @@ class BaseMenu(object):
         mouse_x = pygame.mouse.get_pos()[0]
         mouse_y = pygame.mouse.get_pos()[1]
         for button in self.buttons:
-            if button.x < mouse_x < button.x + button_width and button.y < mouse_y < button.y + button_height:
+            if button.x <= mouse_x <= button.x + button_width and button.y <= mouse_y <= button.y + button_height:
                 button.is_highlighted = True
             else:
                 button.is_highlighted = False
@@ -278,54 +278,54 @@ class Main:
 
             # Calculate AI
             if self.player1.is_bot:
-                if self.player1.y + paddle_height < self.ball.y:
+                if self.player1.y + paddle_height <= self.ball.y:
                     self.player1.angle = math.pi / 2
-                elif self.player1.y > self.ball.y:
+                elif self.player1.y >= self.ball.y:
                     self.player1.angle = -math.pi / 2
             if self.player2.is_bot:
-                if self.player2.y + paddle_height < self.ball.y:
+                if self.player2.y + paddle_height <= self.ball.y:
                     self.player2.angle = math.pi / 2
-                elif self.player2.y > self.ball.y:
+                elif self.player2.y >= self.ball.y:
                     self.player2.angle = -math.pi / 2
 
             # Paddle collision with y bounds
-            if self.player2.y < 0:
+            if self.player2.y <= 0:
                 self.player2.y = 0
-            elif self.player2.y > (display_size - paddle_height):
+            elif self.player2.y >= (display_size - paddle_height):
                 self.player2.y = display_size - paddle_height
 
-            if self.player1.y < 0:
+            if self.player1.y <= 0:
                 self.player1.y = 0
-            elif self.player1.y > (display_size - paddle_height):
+            elif self.player1.y >= (display_size - paddle_height):
                 self.player1.y = display_size - paddle_height
 
             # Ball collision with wall bounds
-            if self.ball.x < ball_size:
+            if self.ball.x <= ball_size:
                 self.reset()
                 self.player2.score += 1
                 self.pongblip2.play()
                 time.sleep(0.5)
-            elif self.ball.x > display_size - ball_size:
+            elif self.ball.x >= display_size - ball_size:
                 self.reset()
                 self.player1.score += 1
                 self.pongblip2.play()
                 time.sleep(0.5)
-            if self.ball.y < ball_size:
+            if self.ball.y <= ball_size:
                 self.ball.angle = -self.ball.angle
                 self.ball.y = 2 * ball_size - self.ball.y
                 self.pongblip2.play()
-            elif self.ball.y > display_size - ball_size:
+            elif self.ball.y >= display_size - ball_size:
                 self.ball.angle = -self.ball.angle
                 self.ball.y = 2 * (display_size - ball_size) - self.ball.y
                 self.pongblip2.play()
 
             # Ball collision with paddles
             # For x coords, must use math.pi - angle to shift for cos
-            if self.player1.x < self.ball.x < self.player1.x + ball_size and self.player1.y < self.ball.y < self.player1.y + paddle_height:
+            if self.player1.x <= self.ball.x <= self.player1.x + ball_size and self.player1.y <= self.ball.y <= self.player1.y + paddle_height:
                 self.ball.angle = math.pi - self.ball.angle - (self.player1.angle / 10)
                 self.ball.x = 2 * (self.player1.x + ball_size) - self.ball.x
                 self.pongblip.play()
-            if self.player2.x < self.ball.x < self.player2.x + ball_size and self.player2.y < self.ball.y < self.player2.y + paddle_height:
+            if self.player2.x <= self.ball.x <= self.player2.x + ball_size and self.player2.y <= self.ball.y <= self.player2.y + paddle_height:
                 self.ball.angle = math.pi - self.ball.angle - (self.player2.angle / 10)
                 self.ball.x = 2 * self.player2.x - self.ball.x
                 self.pongblip.play()
