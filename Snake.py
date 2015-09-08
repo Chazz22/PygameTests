@@ -50,11 +50,29 @@ class Main:
         screen_text = self.font.render(msg, True, color)
         self.gameDisplay.blit(screen_text, [(display_width / 2) - (screen_text.get_rect().width / 2), display_height / 2])
 
-    def scan_vertical(self):
+    def scan_above(self):
         for part in self.snakeList[:-1]:
-            if part[1] == self.pos_y:
-                if part[1] > self.pos_y:
-                    
+            if part[0] == self.pos_x and part[1] < self.pos_x:
+                return False
+        return True
+
+    def scan_below(self):
+        for part in self.snakeList[:-1]:
+            if part[0] == self.pos_x and part[1] > self.pos_x:
+                return False
+        return True
+
+    def scan_left(self):
+        for part in self.snakeList[:-1]:
+            if part[1] == self.pos_y and part[0] < self.pos_x:
+                return False
+        return True
+
+    def scan_right(self):
+        for part in self.snakeList[:-1]:
+            if part[1] == self.pos_y and part[0] > self.pos_x:
+                return False
+        return True
 
     def gameLoop(self):
 
@@ -107,15 +125,20 @@ class Main:
 
                 # Left of the apple
                 if self.pos_x < self.apple_x:
-
+                    self.pos_x_change = block_size
+                    self.pos_y_change = 0
                 # Right of the apple
                 elif self.pos_x > self.apple_x:
-
+                    self.pos_x_change = -block_size
+                    self.pos_y_change = 0
                 # Under apple
                 elif self.pos_y < self.apple_y:
-
+                    self.pos_change_y = -block_size
+                    self.pos_change_x = 0
                 # Above apple
                 elif self.pos_y > self.apple_y:
+                    self.pos_change_y = block_size
+                    self.pos_change_x = 0
 
             # Game barrier
             if self.pos_x > display_width or self.pos_x < 0 or self.pos_y > display_height or self.pos_y < 0:

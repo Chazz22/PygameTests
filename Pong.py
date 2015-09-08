@@ -4,7 +4,7 @@ import pygame, math, random, time
 from abc import abstractmethod, ABCMeta
 
 display_size = 500
-fps = 35
+fps = 50
 
 ball_size = display_size // 30
 paddle_height = display_size // 3
@@ -117,27 +117,6 @@ class BaseMenu(object):
                 return None
 
 
-class MainMenu(BaseMenu):
-
-    def __init__(self, main):
-        self.main = main
-        self.buttons = ([Button(self.main, 'Play', display_size // 2 - button_width / 2,
-                                display_size // 2 - button_height)])
-        BaseMenu.__init__(self, main, self.buttons)
-
-
-class PlayerSelectionMenu(BaseMenu):
-
-    def __init__(self, main):
-        self.main = main
-        self.buttons = ([Button(self.main, '1 Player', display_size // 2 - button_width / 2, display_size // 3)
-                         , Button(self.main, '2 Player', display_size // 2 - button_width / 2,
-                                  (display_size // 3) + button_height * 1.2)
-                         , Button(self.main, '0 Player', display_size // 2 - button_width / 2,
-                                  (display_size // 3) + 2 * button_height * 1.2)])
-        BaseMenu.__init__(self, main, self.buttons)
-
-
 class Button(object):
 
     def __init__(self, main, name, x, y):
@@ -173,7 +152,7 @@ class Hud(object):
         pygame.draw.line(self.game_display, black, (display_size // 2, 0), (display_size // 2, display_size))
 
     def update_scoreboard(self):
-        text = self.font.render('{}:{}'.format(self.main.player1.score, self.main.player2.score), True, black)
+        text = self.font.render('{} : {}'.format(self.main.player1.score, self.main.player2.score), True, black)
         self.game_display.blit(text, ((display_size // 2) - (text.get_rect().width // 2), ball_size))
 
     def send_centered_message(self, msg):
@@ -183,6 +162,11 @@ class Hud(object):
     def update(self):
         self.update_scoreboard()
         self.draw_line()
+
+    def check_win(self):
+        if abs(self.main.player1.score - self.main.player2.score) >= 2:
+            return True
+        return False
 
 
 class Main:
@@ -204,24 +188,15 @@ class Main:
         self.pongblip = pygame.mixer.Sound('Resources/pongblip.wav')
         self.pongblip2 = pygame.mixer.Sound('Resources/pongblip2.wav')
 
-        self.player1 = None
-        self.player2 = None
-        self.ball = None
-
         self.hud = Hud(self)
-        self.main_menu = MainMenu(self)
-        self.player_selection_menu = PlayerSelectionMenu(self)
-
-        self.game_loop()
-
-    def reset(self):
-        self.player1.reset()
-        self.player2.reset()
-        self.ball.reset()
-
-    def game_loop(self):
-
-        self.main_menu.enabled = True
+        self.main_menu = BaseMenu(self, [Button(self, 'Play', display_size // 2 - button_width / 2,
+                                display_size // 2 - button_height)])
+        self.player_selection_menu = BaseMenu(self, [Button(self, '1 Player', display_size // 2 - button_width / 2, display_size // 3)
+                         , Button(self, '2 Player', display_size // 2 - button_width / 2,
+                                  (display_size // 3) + button_height * 1.2)
+                         , Button(self, '0 Player', display_size // 2 - button_width / 2,
+                                  (display_size // 3) + 2 * button_height * 1.2)])
+        self.menus = [self.main_menu, self.player_selection_menu]
 
         self.player1 = Paddle(self.game_display, ball_size * 2, display_size // 2 - paddle_height // 2, 0, paddle_speed)
         self.player2 = Paddle(self.game_display, display_size - (ball_size * 3),
@@ -230,6 +205,21 @@ class Main:
         self.ball = Ball(self.game_display, display_size // 2, display_size // 2
                          , 0, ball_speed)
         self.ball.reset()
+
+        self.main_menu.enabled = True
+
+        self.game_loop()
+
+    def reset_pos(self):
+        self.player1.reset()
+        self.player2.reset()
+        self.ball.reset()
+
+    def reset_score(self):
+        self.player1.score = 0
+        self.player2.score = 0
+
+    def menu_loop(self):
 
         while not self.game_started:
 
@@ -260,6 +250,10 @@ class Main:
             if self.main_menu.enabled:
                 self.main_menu.update()
             pygame.display.update()
+
+    def game_loop(self):
+
+        self.menu_loop()
 
         while not self.game_exit:
 
@@ -307,15 +301,25 @@ class Main:
 
             # Ball collision with wall bounds
             if self.ball.x <= ball_size:
-                self.reset()
+                # Player 2 won
+                self.reset_pos()
                 self.player2.score += 1
                 self.pongblip2.play()
                 time.sleep(0.5)
+                if self.hud.check_win():
+                    self.game_over = True
+                    self.game_over_loop()
+                    break
             elif self.ball.x >= display_size - ball_size:
-                self.reset()
+                # Player 1 won
+                self.reset_pos()
                 self.player1.score += 1
                 self.pongblip2.play()
                 time.sleep(0.5)
+                if self.hud.check_win():
+                    self.game_over = True
+                    self.game_over_loop()
+                    break
             if self.ball.y <= ball_size:
                 self.ball.angle = -self.ball.angle
                 self.ball.y = 2 * ball_size - self.ball.y
@@ -350,5 +354,33 @@ class Main:
 
             pygame.display.update()
             self.clock.tick(fps)
+
+    def game_over_loop(self):
+
+        while self.game_over:
+            # Draw bg first
+            self.game_display.fill(white)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_c:
+                        self.game_over = False
+                        self.reset_score()
+                        self.game_loop()
+                    if event.key == pygame.K_m:
+                        self.game_started = False
+                        self.menu_loop()
+                        self.reset_score()
+
+            if self.player1.score > self.player2.score:
+                self.hud.send_centered_message('Player 1 won! C for rematch, M for main menu!')
+            else:
+                self.hud.send_centered_message('Player 2 won! C for rematch, M for main menu!')
+
+            pygame.display.update()
 
 Main()
