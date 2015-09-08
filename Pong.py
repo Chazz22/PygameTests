@@ -70,7 +70,8 @@ class Ball(BaseEntity):
         self.y -= int(math.sin(self.angle) * self.speed)
 
     def reset(self):
-        ball_range = [2 * math.pi, math.pi]
+        ball_range = [2 * math.pi + random.choice([random.uniform(0.1, 0.2), random.uniform(-0.1, -0.2)]),
+                      math.pi + random.choice([random.uniform(0.1, 0.2), random.uniform(-0.1, -0.2)])]
         self.x = self.origin_x
         self.y = self.origin_y
         self.angle = random.choice(ball_range)
@@ -116,7 +117,8 @@ class MainMenu(BaseMenu):
 
     def __init__(self, main):
         self.main = main
-        self.buttons = ([Button(self.main, 'Play', display_size // 2 - button_width / 2, display_size // 2 - button_height)])
+        self.buttons = ([Button(self.main, 'Play', display_size // 2 - button_width / 2,
+                                display_size // 2 - button_height)])
         BaseMenu.__init__(self, main, self.buttons)
 
 
@@ -215,8 +217,9 @@ class Main:
 
         self.main_menu.enabled = True
 
-        self.player1 = Paddle(self.game_display, ball_size * 2, display_size // 4, 0, paddle_speed)
-        self.player2 = Paddle(self.game_display, display_size - (ball_size * 3), display_size // 4, 0, paddle_speed)
+        self.player1 = Paddle(self.game_display, ball_size * 2, display_size // 2 - paddle_height // 2, 0, paddle_speed)
+        self.player2 = Paddle(self.game_display, display_size - (ball_size * 3),
+                              display_size // 2 - paddle_height // 2, 0, paddle_speed)
 
         self.ball = Ball(self.game_display, display_size // 2, display_size // 2
                          , 0, ball_speed)
@@ -321,11 +324,13 @@ class Main:
 
             # Ball collision with paddles
             # For x coords, must use math.pi - angle to shift for cos
-            if self.player1.x <= self.ball.x <= self.player1.x + ball_size and self.player1.y <= self.ball.y <= self.player1.y + paddle_height:
+            if self.player1.x <= self.ball.x <= self.player1.x + ball_size\
+                    and self.player1.y <= self.ball.y <= self.player1.y + paddle_height:
                 self.ball.angle = math.pi - self.ball.angle - (self.player1.angle / 10)
                 self.ball.x = 2 * (self.player1.x + ball_size) - self.ball.x
                 self.pongblip.play()
-            if self.player2.x <= self.ball.x <= self.player2.x + ball_size and self.player2.y <= self.ball.y <= self.player2.y + paddle_height:
+            if self.player2.x <= self.ball.x <= self.player2.x + ball_size\
+                    and self.player2.y <= self.ball.y <= self.player2.y + paddle_height:
                 self.ball.angle = math.pi - self.ball.angle - (self.player2.angle / 10)
                 self.ball.x = 2 * self.player2.x - self.ball.x
                 self.pongblip.play()
