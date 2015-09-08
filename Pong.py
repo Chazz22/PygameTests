@@ -215,6 +215,12 @@ class Main:
         self.player2.reset()
         self.ball.reset()
 
+    def start_game(self):
+        self.game_over = False
+        self.game_started = True
+        self.reset_score()
+        self.game_loop()
+
     def reset_score(self):
         self.player1.score = 0
         self.player2.score = 0
@@ -234,15 +240,16 @@ class Main:
                     if self.player_selection_menu.check_click() == '1 Player':
                         self.player2.is_bot = True
                         self.player_selection_menu.enabled = False
-                        self.game_started = True
+                        self.start_game()
                     elif self.player_selection_menu.check_click() == '2 Player':
                         self.player_selection_menu.enabled = False
                         self.game_started = True
+                        self.start_game()
                     elif self.player_selection_menu.check_click() == '0 Player':
                         self.player1.is_bot = True
                         self.player2.is_bot = True
                         self.player_selection_menu.enabled = False
-                        self.game_started = True
+                        self.start_game()
 
             self.game_display.fill(white)
             if self.player_selection_menu.enabled:
@@ -373,8 +380,8 @@ class Main:
                         self.game_loop()
                     if event.key == pygame.K_m:
                         self.game_started = False
+                        self.main_menu.enabled = True
                         self.menu_loop()
-                        self.reset_score()
 
             if self.player1.score > self.player2.score:
                 self.hud.send_centered_message('Player 1 won! C for rematch, M for main menu!')
