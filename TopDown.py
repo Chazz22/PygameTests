@@ -17,7 +17,7 @@ class Entity(object):
         return self.hp > 0
 
     def draw(self):
-        
+
 
 
 class Main:
