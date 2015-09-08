@@ -4,7 +4,7 @@ import pygame, math, random, time
 from abc import abstractmethod, ABCMeta
 
 display_size = 500
-fps = 30
+fps = 35
 
 ball_size = display_size // 30
 paddle_height = display_size // 3
@@ -101,13 +101,17 @@ class BaseMenu(object):
             else:
                 button.is_highlighted = False
 
+    def update(self):
+        self.check_hover()
+        self.draw()
+
     def check_click(self):
         if not self.enabled:
-             return
+            return
         mouse_x = pygame.mouse.get_pos()[0]
         mouse_y = pygame.mouse.get_pos()[1]
         for button in self.buttons:
-            if button.x < mouse_x < button.x + button_width and button.y < mouse_y < button.y + button_height:
+            if button.x <= mouse_x <= button.x + button_width and button.y <= mouse_y <= button.y + button_height:
                 return button.click()
             else:
                 return None
@@ -127,8 +131,10 @@ class PlayerSelectionMenu(BaseMenu):
     def __init__(self, main):
         self.main = main
         self.buttons = ([Button(self.main, '1 Player', display_size // 2 - button_width / 2, display_size // 3)
-                         , Button(self.main, '2 Player', display_size // 2 - button_width / 2, (display_size // 3) + button_height * 1.2)
-                         , Button(self.main, '0 Player', display_size // 2 - button_width / 2, (display_size // 3) + 2 * button_height * 1.2)])
+                         , Button(self.main, '2 Player', display_size // 2 - button_width / 2,
+                                  (display_size // 3) + button_height * 1.2)
+                         , Button(self.main, '0 Player', display_size // 2 - button_width / 2,
+                                  (display_size // 3) + 2 * button_height * 1.2)])
         BaseMenu.__init__(self, main, self.buttons)
 
 
@@ -232,7 +238,6 @@ class Main:
                     pygame.quit()
                     quit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    print(self.player_selection_menu.check_click())
                     if self.main_menu.check_click() == 'Play':
                         self.main_menu.enabled = False
                         self.player_selection_menu.enabled = True
@@ -251,11 +256,9 @@ class Main:
 
             self.game_display.fill(white)
             if self.player_selection_menu.enabled:
-                self.player_selection_menu.check_hover()
-                self.player_selection_menu.draw()
+                self.player_selection_menu.update()
             if self.main_menu.enabled:
-                self.main_menu.check_hover()
-                self.main_menu.draw()
+                self.main_menu.update()
             pygame.display.update()
 
         while not self.game_exit:
